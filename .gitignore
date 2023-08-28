@@ -1,0 +1,7 @@
+*.sw?
+data/
+*.pyc/
+__pycache__/
+venv/
+tools/
+*.img
