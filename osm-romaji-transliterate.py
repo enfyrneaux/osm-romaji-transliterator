@@ -46,6 +46,7 @@ class NameModifier(osmium.SimpleHandler):
                 'name:ja-Hira',
                 'name:int_name',
                 'name:en',
+                'name:ja_rm',
             ]
         )
         if orig_name is None:

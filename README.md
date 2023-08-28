@@ -41,6 +41,7 @@ python osm-romaji-transliterate.py \
 ## Known Issues
 
 - Tag language precedence is hardcoded (a flag will be added for this)
+- Macrons are not supported, (those already present in the `name:ja_rm` tag will be imported, depending on precedence)
 - Chinese names (or anything else not handled by Cutlet) will be ignored
 
 ## License
