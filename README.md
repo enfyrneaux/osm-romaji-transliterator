@@ -18,6 +18,8 @@ This tool is not a proper translator, and there is a lot of room for improvement
 ```bash
 git clone https://github.com/enfyrneaux/osm-romaji-transliterator
 cd osm-romaji-transliterator
+python -m venv venv # or your preferred virtual environment
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
