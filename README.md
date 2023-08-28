@@ -9,7 +9,7 @@ This tool is not a proper translator, and there is a lot of room for improvement
 ## Behavior
 
 - Ignores names fully in Latin script.
-- Transliterates names in non-Latin scripts to Hepburn Romaji.
+- Transliterates names in Japanese scripts to Hepburn Romaji.
 - Replaces original names with transliterated names.
 - Keeps original names as `name:ja` tag.
 
@@ -17,6 +17,7 @@ This tool is not a proper translator, and there is a lot of room for improvement
 
 ```bash
 git clone https://github.com/enfyrneaux/osm-romaji-transliterator
+cd osm-romaji-transliterator
 pip install -r requirements.txt
 ```
 
@@ -31,9 +32,16 @@ python osm-romaji-transliterate.py \
     --verbose
 ```
 
+### Command Line Flags
+
 - `--input-osm`: OSM input map file (required)
 - `--output-osm`: OSM output map file (required)
 - `--verbose`: Write conversions to console
+
+## Known Issues
+
+- Tag language precedence is hardcoded (a flag will be added for this)
+- Chinese names (or anything else not handled by Cutlet) will be ignored
 
 ## License
 
