@@ -18,7 +18,7 @@ This tool is not a proper translator, and there is a lot of room for improvement
 ```bash
 git clone https://github.com/enfyrneaux/osm-romaji-transliterator
 cd osm-romaji-transliterator
-python -m venv venv # or your preferred virtual environment
+python3 -m venv venv # or your preferred virtual environment
 source venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -28,7 +28,7 @@ pip install -r requirements.txt
 Run the script with:
 
 ```bash
-python osm-romaji-transliterate.py \
+python3 osm-romaji-transliterate.py \
     --input-osm input.osm \
     --output-osm output.osm \
     --verbose
