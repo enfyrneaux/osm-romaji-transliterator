@@ -5,12 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: Shikoku",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "args": [
+                "--input-osm", "data/shikoku.osm.pbf",
+                "--output-osm", "data/shikoku-updated.osm.pbf"
+            ]
         }
     ]
 }
