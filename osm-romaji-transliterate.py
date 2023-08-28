@@ -19,6 +19,8 @@ def has_latin_chars(s):
             return True
     return False
 
+g_verbose = False
+
 class NameModifier(osmium.SimpleHandler):
     def __init__(self, writer):
         super(NameModifier, self).__init__()
@@ -33,15 +35,11 @@ class NameModifier(osmium.SimpleHandler):
         }
 
         orig_name = map_item.tags.get('name')
-        kana_name = map_item.tags.get('name:ja')
-        hira_name = map_item.tags.get('name:ja-Hira')
         romaji_name = map_item.tags.get('name:en')
 
         # don't even bother for full latin names
         if is_latin(orig_name):
             return map_item
-
-        modified = False
 
         if romaji_name is None:
 
@@ -52,7 +50,9 @@ class NameModifier(osmium.SimpleHandler):
                 title=not has_latin_chars(orig_name)
             )
 
-            print(f'{orig_name} ==> {converted_name}')
+            if g_verbose:
+                print(f'{orig_name} ==> {converted_name}')
+
             newtags['name'] = ('name', converted_name,)
             newtags['name:ja'] = ('name:ja', orig_name,) # preserve the japanese name
 
@@ -73,8 +73,10 @@ class NameModifier(osmium.SimpleHandler):
 
 
 def main(args):
+    global g_verbose
     input_file = args.input_osm
     output_file = args.output_osm
+    g_verbose = args.verbose
 
     if os.path.exists(output_file):
         os.remove(output_file)
@@ -87,5 +89,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-osm", type=str, help="OSM input map file", required=True)
     parser.add_argument("--output-osm", type=str, help="OSM output map file", required=True)
+    parser.add_argument("--verbose", action='store_true', help="Print conversions")
     args = parser.parse_args()
     main(args)
