@@ -4,7 +4,7 @@ import cutlet
 import re
 import argparse
 
-katsu = cutlet.Cutlet(ensure_ascii=False)
+g_verbose = False
 
 def is_all_latin(s:str):
     for c in s:
@@ -19,8 +19,6 @@ def has_latin_chars(s:str):
             return True
     return False
 
-g_verbose = False
-
 def get_in_order(d:dict, keys:list, default=None):
     for k in keys:
         if k in d:
@@ -32,6 +30,7 @@ class NameModifier(osmium.SimpleHandler):
     def __init__(self, writer):
         super(NameModifier, self).__init__()
         self.writer = writer
+        self.katsu = cutlet.Cutlet(ensure_ascii=False)
 
     def modify(self, map_item):
 
@@ -70,7 +69,7 @@ class NameModifier(osmium.SimpleHandler):
         if romaji_name is None:
             transliterate_src = orig_name
 
-            converted_name = katsu.romaji(
+            converted_name = self.katsu.romaji(
                 transliterate_src,
                 title=not has_latin_chars(orig_name)
             )
