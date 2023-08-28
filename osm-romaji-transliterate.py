@@ -6,14 +6,14 @@ import argparse
 
 katsu = cutlet.Cutlet(ensure_ascii=False)
 
-def is_latin(s):
+def is_all_latin(s:str):
     for c in s:
         if ord(c) > 127:
             if any(["\u4e00" <= c <= "\u9fff", "\u3040" <= c <= "\u309F", "\u30A0" <= c <= "\u30FF"]):
                 return False
     return True
 
-def has_latin_chars(s):
+def has_latin_chars(s:str):
     for c in s:
         if 'a' <= c <= 'z' or 'A' <= c <= 'Z':
             return True
@@ -21,28 +21,53 @@ def has_latin_chars(s):
 
 g_verbose = False
 
+def get_in_order(d:dict, keys:list, default=None):
+    for k in keys:
+        if k in d:
+            return d[k]
+    
+    return default
+
 class NameModifier(osmium.SimpleHandler):
     def __init__(self, writer):
         super(NameModifier, self).__init__()
         self.writer = writer
 
     def modify(self, map_item):
-        if 'name' not in map_item.tags:
-            return map_item
 
         newtags = {
             t.k:t for t in map_item.tags
         }
 
-        orig_name = map_item.tags.get('name')
-        romaji_name = map_item.tags.get('name:en')
-
-        # don't even bother for full latin names
-        if is_latin(orig_name):
+        orig_name = get_in_order(
+            newtags,
+            [
+                'name',
+                'name:ja',
+                'name:ja-Hira',
+                'name:int_name',
+                'name:en',
+            ]
+        )
+        if orig_name is None:
             return map_item
 
-        if romaji_name is None:
+        orig_name = orig_name.v
 
+        # don't even bother for full latin names
+        if is_all_latin(orig_name):
+            return map_item
+
+        romaji_name = get_in_order(
+            newtags,
+            [
+                'int_name',
+                'name:en',
+                'name:ja_rm',
+            ]
+        )
+
+        if romaji_name is None:
             transliterate_src = orig_name
 
             converted_name = katsu.romaji(
@@ -50,15 +75,24 @@ class NameModifier(osmium.SimpleHandler):
                 title=not has_latin_chars(orig_name)
             )
 
+            converted_name = converted_name.replace(' - ', '-')
+            converted_name = converted_name.replace(' -', '-')
+            converted_name = converted_name.replace('- ', '-')
+
             if g_verbose:
                 print(f'{orig_name} ==> {converted_name}')
 
+            # apply the romaji name
             newtags['name'] = ('name', converted_name,)
-            newtags['name:ja'] = ('name:ja', orig_name,) # preserve the japanese name
+            newtags['name:ja_rm'] = ('name:ja_rm', converted_name,)
+            newtags['int_name'] = ('int_name', converted_name,)
+
+            if 'name:ja' not in newtags:
+                newtags['name:ja'] = ('name:ja', orig_name,) # preserve the japanese name
 
         # straight swapover
         if romaji_name is not None:
-            newtags['name'] = ('name', romaji_name)
+            newtags['name'] = ('name', romaji_name.v,)
 
         return map_item.replace(tags=list(newtags.values()))
 

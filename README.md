@@ -2,31 +2,9 @@
 
 ## Description
 
-This Python script applies Hepburn transliteration to names in an OpenStreetMap (OSM) file. It leverages the `osmium` and `cutlet` libraries to read, modify, and write OSM files.
+This Python script applies Hepburn transliteration to Japanese names in an OpenStreetMap (OSM) file. It leverages the `osmium` and `cutlet` libraries to read, modify, and write OSM files. This tool is intended as an intermediate step before sending an OSM file to a tool that lacks proper transliteration such as [mkgmap](https://www.mkgmap.org.uk/doc/index.html).
 
-## Requirements
-
-- Python 3.x
-- osmium
-- cutlet
-- argparse
-
-Install dependencies:
-
-```bash
-pip install osmium pyosmium cutlet argparse
-```
-
-## Usage
-
-Run the script with:
-
-```bash
-python osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm
-```
-
-- `--input-osm`: OSM input map file (required)
-- `--output-osm`: OSM output map file (required)
+This tool is not a proper translator, and there is a lot of room for improvement.
 
 ## Behavior
 
@@ -34,6 +12,33 @@ python osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm
 - Transliterates names in non-Latin scripts to Hepburn Romaji.
 - Replaces original names with transliterated names.
 - Keeps original names as `name:ja` tag.
+
+## Requirements
+
+- Python 3.7+
+- [osmium]
+- [cutlet](https://github.com/polm/cutlet)
+
+Install dependencies:
+
+```bash
+pip install osmium pyosmium cutlet
+```
+
+## Usage
+
+Run the script with:
+
+```bash
+python osm-romaji-transliterate.py \
+    --input-osm input.osm \
+    --output-osm output.osm \
+    --verbose
+```
+
+- `--input-osm`: OSM input map file (required)
+- `--output-osm`: OSM output map file (required)
+- `--verbose`: Write
 
 ## License
 

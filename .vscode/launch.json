@@ -13,7 +13,8 @@
             "justMyCode": true,
             "args": [
                 "--input-osm", "data/shikoku.osm.pbf",
-                "--output-osm", "data/shikoku-updated.osm.pbf"
+                "--output-osm", "data/shikoku-updated.osm.pbf",
+                "--verbose"
             ]
         }
     ]
