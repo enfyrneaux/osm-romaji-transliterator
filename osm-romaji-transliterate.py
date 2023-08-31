@@ -6,14 +6,45 @@ import argparse
 
 g_verbose = False
 
-def is_all_latin(s:str):
+g_name_source_tags = [
+    'name',
+    'name:ja',
+    'name:ja-Hira',
+    'name:int_name',
+    'name:en',
+    'name:ja_rm',
+]
+
+g_romaji_source_tags = [
+    'int_name',
+    'name:en',
+    'name:ja_rm',
+]
+
+g_romaji_dest_tags = [
+    'name:ja_rm',
+    'int_name',
+]
+
+g_clobber_existing_tags = False
+g_copy_name_to_japanese_name = False
+g_romaji_system = 'hepburn'
+g_ensure_ascii = False
+
+# helper functions
+
+def is_all_latin(s:str) -> bool:
     for c in s:
         if ord(c) > 127:
-            if any(["\u4e00" <= c <= "\u9fff", "\u3040" <= c <= "\u309F", "\u30A0" <= c <= "\u30FF"]):
+            if any([
+                    "\u4e00" <= c <= "\u9fff",
+                    "\u3040" <= c <= "\u309F",
+                    "\u30A0" <= c <= "\u30FF",
+                    ]):
                 return False
     return True
 
-def has_latin_chars(s:str):
+def has_latin_chars(s:str) -> bool:
     for c in s:
         if 'a' <= c <= 'z' or 'A' <= c <= 'Z':
             return True
@@ -27,10 +58,12 @@ def get_in_order(d:dict, keys:list, default=None):
     return default
 
 class NameModifier(osmium.SimpleHandler):
-    def __init__(self, writer):
+    def __init__(self, writer, **kwargs):
         super(NameModifier, self).__init__()
         self.writer = writer
-        self.katsu = cutlet.Cutlet(ensure_ascii=False)
+        self.katsu = cutlet.Cutlet(
+            ensure_ascii=False
+        )
 
     def modify(self, map_item):
 
@@ -40,14 +73,7 @@ class NameModifier(osmium.SimpleHandler):
 
         orig_name = get_in_order(
             newtags,
-            [
-                'name',
-                'name:ja',
-                'name:ja-Hira',
-                'name:int_name',
-                'name:en',
-                'name:ja_rm',
-            ]
+            g_name_source_tags
         )
         if orig_name is None:
             return map_item
@@ -60,11 +86,7 @@ class NameModifier(osmium.SimpleHandler):
 
         romaji_name = get_in_order(
             newtags,
-            [
-                'int_name',
-                'name:en',
-                'name:ja_rm',
-            ]
+            g_romaji_source_tags,
         )
 
         if romaji_name is None:
@@ -121,8 +143,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-osm", type=str, help="OSM input map file", required=True)
-    parser.add_argument("--output-osm", type=str, help="OSM output map file", required=True)
+    parser.add_argument("--input-osm", type=str, help="osm/o5m/pbf input map file", required=True)
+    parser.add_argument("--output-osm", type=str, help="osm/o5m/pbf output map file", required=True)
     parser.add_argument("--verbose", action='store_true', help="Print conversions")
     args = parser.parse_args()
     main(args)
