@@ -32,7 +32,6 @@ g_romaji_system = 'hepburn'
 g_ensure_ascii = False
 
 # helper functions
-
 def is_all_latin(s:str) -> bool:
     for c in s:
         if ord(c) > 127:
@@ -141,10 +140,14 @@ def main(args):
     handler = NameModifier(writer)
     handler.apply_file(input_file)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-osm", type=str, help="osm/o5m/pbf input map file", required=True)
     parser.add_argument("--output-osm", type=str, help="osm/o5m/pbf output map file", required=True)
     parser.add_argument("--verbose", action='store_true', help="Print conversions")
+    parser.add_argument("--kana-source-tags", nargs="+", help="source tags for kana names, checked in order", default=" ".join(g_name_source_tags))
+    parser.add_argument("--romaji-source-tags", nargs="+", help="source tags for romaji ")
+
     args = parser.parse_args()
     main(args)
