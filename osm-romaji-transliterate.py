@@ -3,33 +3,36 @@ import os
 import cutlet
 import re
 import argparse
+import logging
 
-g_verbose = False
 
-g_name_source_tags = [
+# program-wide defaults
+
+g_default_kana_source_tags = [
     'name',
     'name:ja',
     'name:ja-Hira',
-    'name:int_name',
-    'name:en',
-    'name:ja_rm',
-]
-
-g_romaji_source_tags = [
     'int_name',
     'name:en',
     'name:ja_rm',
 ]
 
-g_romaji_dest_tags = [
+g_default_romaji_source_tags = [
+    'int_name',
+    'name:en',
+    'name:ja_rm',
+]
+
+g_default_romaji_dest_tags = [
     'name:ja_rm',
     'int_name',
 ]
 
-g_clobber_existing_tags = False
-g_copy_name_to_japanese_name = False
-g_romaji_system = 'hepburn'
-g_ensure_ascii = False
+g_default_kana_dest_tags = [
+    'name:ja',
+]
+
+g_default_romaji_system = 'hepburn'
 
 # helper functions
 def is_all_latin(s:str) -> bool:
@@ -59,10 +62,31 @@ def get_in_order(d:dict, keys:list, default=None):
 class NameModifier(osmium.SimpleHandler):
     def __init__(self, writer, **kwargs):
         super(NameModifier, self).__init__()
+
+        # some defaults
+        self.verbose = False
+        self.kana_source_tags = ['name']
+        self.kana_dest_tags = ['name:ja']
+        self.romaji_source_tags = ['name', 'int_name', 'name:en', 'name:ja_rm']
+        self.romaji_dest_tags = ['int_name', 'name:ja_rm']
+        self.clobber_kana = False
+        self.clobber_romaji = False
+        self.ensure_ascii = False
+        self.disable_foreign_spelling = False
+        self.romaji_system = 'hepburn'
+
+        # load arg overrides
+        for arg_k, arg_v in kwargs.items():
+            setattr(self, arg_k, arg_v)
+
+
         self.writer = writer
         self.katsu = cutlet.Cutlet(
-            ensure_ascii=False
+            self.romaji_system,
+            ensure_ascii=self.ensure_ascii,
+            use_foreign_spelling=not self.disable_foreign_spelling,
         )
+
 
     def modify(self, map_item):
 
@@ -72,7 +96,7 @@ class NameModifier(osmium.SimpleHandler):
 
         orig_name = get_in_order(
             newtags,
-            g_name_source_tags
+            self.kana_source_tags
         )
         if orig_name is None:
             return map_item
@@ -85,7 +109,7 @@ class NameModifier(osmium.SimpleHandler):
 
         romaji_name = get_in_order(
             newtags,
-            g_romaji_source_tags,
+            self.romaji_source_tags,
         )
 
         if romaji_name is None:
@@ -100,7 +124,7 @@ class NameModifier(osmium.SimpleHandler):
             converted_name = converted_name.replace(' -', '-')
             converted_name = converted_name.replace('- ', '-')
 
-            if g_verbose:
+            if self.verbose:
                 print(f'{orig_name} ==> {converted_name}')
 
             # apply the romaji name
@@ -128,26 +152,57 @@ class NameModifier(osmium.SimpleHandler):
 
 
 def main(args):
-    global g_verbose
     input_file = args.input_osm
     output_file = args.output_osm
-    g_verbose = args.verbose
 
     if os.path.exists(output_file):
         os.remove(output_file)
 
     writer = osmium.SimpleWriter(output_file)
-    handler = NameModifier(writer)
+    handler = NameModifier(
+        writer,
+        verbose=args.verbose,
+        kana_source_tags=args.kana_source_tags,
+        kana_dest_tags=args.kana_dest_tags,
+        romaji_source_tags=args.romaji_source_tags,
+        romaji_dest_tags=args.romaji_dest_tags,
+        clobber_romaji_tags=args.clobber_romaji_tags,
+        clobber_kana_tags=args.clobber_kana_tags,
+        ensure_ascii=args.ensure_ascii,
+    )
+
     handler.apply_file(input_file)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-osm", type=str, help="osm/o5m/pbf input map file", required=True)
-    parser.add_argument("--output-osm", type=str, help="osm/o5m/pbf output map file", required=True)
-    parser.add_argument("--verbose", action='store_true', help="Print conversions")
-    parser.add_argument("--kana-source-tags", nargs="+", help="source tags for kana names, checked in order", default=" ".join(g_name_source_tags))
-    parser.add_argument("--romaji-source-tags", nargs="+", help="source tags for romaji ")
+    parser.add_argument("--output-osm", type=str, help="osm/pbf output map file", required=True)
+    parser.add_argument("--verbose", action='store_true', help="print conversions")
+
+    parser.add_argument("--romaji-system", default="hepburn", help="romanization system - hepburn (default), nihon, or kunrei")
+
+    parser.add_argument("--kana-source-tags", nargs="+", 
+                        help="space-delimited list of source tags for kana names, checked in order (default: %(default)s)",
+                        default=g_default_kana_source_tags)
+    parser.add_argument("--romaji-source-tags",
+                        nargs="+",
+                        help="list of source tags for romaji (default: %(default)s)",
+                        default=g_default_romaji_source_tags)
+
+    parser.add_argument("--romaji-dest-tags",
+                        nargs="+",
+                        help="list of destination tags for generated romaji (default: %(default)s)",
+                        default=g_default_romaji_dest_tags)
+    
+    parser.add_argument("--kana-dest-tags", nargs="+",
+                        help="copy extant kana to these tags (default: %(default)s)",
+                        default=g_default_kana_dest_tags)
+
+    parser.add_argument("--disable-foreign-spelling", action="store_true", help="turn off detection of known foreign loanwords")
+    parser.add_argument("--clobber-romaji-tags", action="store_true", help="always write converted romaji to --romaji-dest-tags, even if they already have data")
+    parser.add_argument("--clobber-kana-tags", action="store_true", help="always write converted kana to --kana-dest-tags, even if they already have data")
+    parser.add_argument("--ensure-ascii", action="store_true", help="force ASCII output for all converted romaji - non-ASCII characters are replaced with \"????\"")
 
     args = parser.parse_args()
     main(args)
