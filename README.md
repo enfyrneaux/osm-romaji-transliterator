@@ -66,25 +66,29 @@ _All tag lists are space-delimited._
 Basic usage (PBF):
 
 ```bash
-osm-romaji-transliterate.py --input-osm input.osm.pbf --output-osm output.osm.pbf
+osm-romaji-transliterate.py \
+    --input-osm input.osm.pbf \
+    --output-osm output.osm.pbf
 ```
 
-Using a different Romaji system:
+Using a different Romaji system and disable loanword detection:
 
 ```bash
-osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm --romaji-system nihon
-```
-
-Disable loanword detection:
-
-```bash
-osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm --disable-loanwords
+osm-romaji-transliterate.py \
+    --input-osm input.osm \
+    --output-osm output.osm \
+    --romaji-system nihon \
+    --disable-loanwords
 ```
 
 Overwrite the `name` tag:
 
 ```bash
-osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm --romaji-dest-tags name --clobber-romaji-tags
+osm-romaji-transliterate.py \
+    --input-osm input.osm \
+    --output-osm output.osm \
+    --romaji-dest-tags name \
+    --clobber-romaji-tags
 ```
 
 ## Known Issues
