@@ -10,7 +10,7 @@ This tool is not a proper translator, and there is a lot of room for improvement
 
 - Ignores names fully in Latin script.
 - Transliterates names in Japanese scripts to Hepburn Romaji.
-- Replaces original names with transliterated names.
+- Updates or replaces designated name fields with transliterated names.
 - Keeps original names as `name:ja` tag.
 
 ## Setup
@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-Run the script with:
+Run the `osm-romaji-transliterate.py` script to convert and manipulate Japanese Kana and Romaji tags in OSM (OpenStreetMap) files.
 
 ```bash
 python3 osm-romaji-transliterate.py \
@@ -34,15 +34,62 @@ python3 osm-romaji-transliterate.py \
     --verbose
 ```
 
-### Command Line Flags
+### Required Arguments
 
-- `--input-osm`: OSM input map file (required)
-- `--output-osm`: OSM output map file (required)
-- `--verbose`: Write conversions to console
+- `--input-osm INPUT_OSM`: Specify the input OSM/O5M/PBF file.
+- `--output-osm OUTPUT_OSM`: Specify the output OSM/PBF file. O5M outputs are not directly supported.
+
+### Optional Arguments
+
+- `-h, --help`: Show help message and exit.
+- `--verbose`: Print conversions.
+- `--romaji-system ROMAJI_SYSTEM`: Choose the Romanization system ('hepburn' [default], 'nihon', or 'kunrei').
+  
+### Tag Handling
+
+_All tag lists are space-delimited._
+
+- `--kana-source-tags [KANA_SOURCE_TAGS ...]`: Source tags for Kana names.
+- `--romaji-source-tags [ROMAJI_SOURCE_TAGS ...]`: Source tags for Romaji names.
+- `--romaji-dest-tags [ROMAJI_DEST_TAGS ...]`: Destination tags for generated Romaji.
+- `--kana-dest-tags [KANA_DEST_TAGS ...]`: Destination tags for extant Kana.
+
+### Miscellaneous
+
+- `--disable-loanwords`: Disable detection of known foreign loanwords.
+- `--clobber-romaji-tags`: Overwrite Romaji destination tags.
+- `--clobber-kana-tags`: Overwrite Kana destination tags.
+- `--ensure-ascii`: Force ASCII output for all converted Romaji.
+
+## Examples
+
+Basic usage (PBF):
+
+```bash
+osm-romaji-transliterate.py --input-osm input.osm.pbf --output-osm output.osm.pbf
+```
+
+Using a different Romaji system:
+
+```bash
+osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm --romaji-system nihon
+```
+
+Disable loanword detection:
+
+```bash
+osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm --disable-loanwords
+```
+
+Overwrite the `name` tag:
+
+```bash
+osm-romaji-transliterate.py --input-osm input.osm --output-osm output.osm --romaji-dest-tags name --clobber-romaji-tags
+```
 
 ## Known Issues
 
-- Tag language precedence is hardcoded (a flag will be added for this)
+- Tag replacement logic is a bit all-or-nothing
 - Macrons are not supported, (those already present in the `name:ja_rm` tag will be imported, depending on precedence)
 - Chinese names (or anything else not handled by Cutlet) will be ignored
 
