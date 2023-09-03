@@ -146,6 +146,10 @@ class NameModifier(osmium.SimpleHandler):
                 if tag not in map_item_tags or self.clobber_romaji:
                     map_item_tags[tag] = (tag, romaji_name.v,)
 
+            for tag in self.kana_dest_tags:
+                if tag not in map_item_tags or self.clobber_kana:
+                    map_item_tags[tag] = (tag, orig_name,)
+
         return map_item.replace(tags=list(map_item_tags.values()))
 
     def node(self, n):
